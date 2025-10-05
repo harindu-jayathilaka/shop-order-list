@@ -1,95 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shop Order List</title>
-<style>
-    body { font-family: Arial, sans-serif; margin: 0; padding-bottom: 100px; }
-    h1 { text-align: center; margin-top: 10px; }
-    h2 { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
-    .item { display: flex; align-items: center; margin-bottom: 5px; padding-left: 10px; }
-    input[type="checkbox"] { margin-right: 10px; }
-    button { padding: 5px 10px; font-size: 14px; cursor: pointer; }
-    #output { white-space: pre-line; margin-top: 10px; background: #f4f4f4; padding: 10px; }
-
-    .control-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: #fff;
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-        padding: 5px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        font-size: 14px;
-        z-index: 999;
-    }
-    .control-row {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        margin: 2px 0;
-    }
-    .control-bar button {
-        padding: 6px 10px;
-        font-size: 13px;
-        border: none;
-        background: #2196F3;
-        color: white;
-        border-radius: 4px;
-        transition: background 0.2s;
-    }
-    .control-bar button:hover {
-        background: #1976D2;
-    }
-    .floating-add-btn {
-        position: fixed;
-        bottom: 90px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        font-size: 24px;
-        cursor: pointer;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        z-index: 1000;
-    }
-    .highlight {
-        animation: highlight 1s ease;
-    }
-    @keyframes highlight {
-        0% { background-color: #ffff99; }
-        100% { background-color: transparent; }
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>Shop Order List</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+    <div id="list"></div>
 
-<h1>Shop Order List</h1>
-<div id="list"></div>
-
-<div class="control-bar">
-    <div class="control-row">
-        <button onclick="showSelected()">Show Selected</button>
+    <div id="control-panel">
+        <button onclick="showSelected()">Show Selected Items</button>
         <button onclick="unselectAll()">Unselect All</button>
-        <button onclick="backupData()">Backup</button>
-    </div>
-    <div class="control-row">
-        <button onclick="restoreData()">Restore</button>
         <button onclick="exportPDF()">Export PDF</button>
     </div>
-</div>
 
-<button class="floating-add-btn" onclick="autoAddItem()">+</button>
+    <pre id="output"></pre>
 
-<div id="output"></div>
-
-<script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
