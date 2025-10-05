@@ -129,6 +129,16 @@ function showSelected() {
     document.getElementById("output").textContent = output || "No items selected.";
 }
 
+// Add this new function
+function scrollToOutput() {
+    const output = document.getElementById('output');
+    showSelected(); // Ensure output is updated
+    output.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
 function unselectAll() {
     if (confirm("Unselect all items?")) {
         selectedItems = {};
@@ -211,3 +221,4 @@ function addItemToVisibleSection() {
 
 // Initial Render
 renderList();
+
