@@ -9,61 +9,39 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shop Order List">
 <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { text-align: center; margin-bottom: 30px; }
+    body { font-family: Arial, sans-serif; margin: 0; padding-bottom: 80px; }
+    h1 { text-align: center; margin-top: 10px; }
     h2 { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
     .item { display: flex; align-items: center; margin-bottom: 5px; }
     input[type="checkbox"] { margin-right: 10px; }
     button { margin: 5px 0; padding: 5px 10px; font-size: 14px; cursor: pointer; }
-
-    /* Floating controls */
-    .floating-controls {
+    #output { white-space: pre-line; margin-top: 10px; background: #f4f4f4; padding: 10px; }
+    .control-bar {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #ffffffcc;
-        backdrop-filter: blur(5px);
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #f9f9f9;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
         padding: 10px;
-        z-index: 1000;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 999;
     }
-
-    .floating-controls button {
-        font-size: 13px;
-        padding: 6px 10px;
-    }
-
-    /* Floating Add button */
     .floating-add-btn {
         position: fixed;
-        bottom: 110px;
-        right: 25px;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
+        bottom: 90px;
+        right: 20px;
         background: #2196F3;
         color: white;
-        font-size: 26px;
         border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
         cursor: pointer;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-        z-index: 1001;
-    }
-
-    #output {
-        white-space: pre-line;
-        margin-top: 10px;
-        background: #f4f4f4;
-        padding: 10px;
-        border-radius: 8px;
-    }
-
-    h2 span.section-name {
-        font-weight: bold;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
 </style>
 </head>
@@ -72,21 +50,18 @@
 <h1>Shop Order List</h1>
 <div id="list"></div>
 
-<!-- Floating Add Item Button -->
-<button class="floating-add-btn" onclick="addItemToVisibleSection()">+</button>
+<div id="output"></div>
 
-<!-- Floating Control Panel -->
-<div class="floating-controls">
+<div class="control-bar">
     <button onclick="showSelected()">Show Selected</button>
     <button onclick="unselectAll()">Unselect All</button>
     <button onclick="backupData()">Backup</button>
     <button onclick="restoreData()">Restore</button>
-    <button onclick="exportToPDF()">Export PDF</button>
+    <button onclick="exportPDF()">Export PDF</button>
 </div>
 
-<div id="output"></div>
+<button class="floating-add-btn" onclick="promptAddItem()">+</button>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="app.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
