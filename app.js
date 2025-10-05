@@ -15,35 +15,24 @@ let sections = JSON.parse(localStorage.getItem("sections")) || {
 };
 
 let selectedItems = JSON.parse(localStorage.getItem("selectedItems")) || {};
-let currentVisibleSection = Object.keys(sections)[0];
 
 function saveSections() {
     localStorage.setItem("sections", JSON.stringify(sections));
 }
-function saveSelectedItems() {
+
+function saveSelected() {
     localStorage.setItem("selectedItems", JSON.stringify(selectedItems));
 }
 
 function renderList() {
     const listDiv = document.getElementById("list");
     listDiv.innerHTML = "";
-
-    for (const section in sections) {
-        sections[section].sort((a, b) => a.localeCompare(b)); // Sort alphabetically
-
+    for (const section of Object.keys(sections).sort()) {
         const h2 = document.createElement("h2");
-        const sectionName = document.createElement("span");
-        sectionName.className = "section-name";
-        sectionName.textContent = section;
-        h2.appendChild(sectionName);
-
-        const addBtn = document.createElement("button");
-        addBtn.textContent = "+ Add Item";
-        addBtn.onclick = () => addItem(section);
-        h2.appendChild(addBtn);
+        h2.textContent = section;
         listDiv.appendChild(h2);
 
-        sections[section].forEach((item, index) => {
+        sections[section].sort().forEach((item, index) => {
             const div = document.createElement("div");
             div.className = "item";
 
@@ -51,29 +40,18 @@ function renderList() {
             checkbox.type = "checkbox";
             checkbox.id = section + "_" + index;
             checkbox.checked = selectedItems[section]?.includes(item) || false;
-            checkbox.onchange = () => {
-                if (!selectedItems[section]) selectedItems[section] = [];
-                if (checkbox.checked) {
-                    if (!selectedItems[section].includes(item))
-                        selectedItems[section].push(item);
-                } else {
-                    selectedItems[section] = selectedItems[section].filter(i => i !== item);
-                }
-                saveSelectedItems();
-            };
+            checkbox.onchange = () => toggleSelection(section, item, checkbox.checked);
 
             const label = document.createElement("label");
             label.htmlFor = checkbox.id;
             label.textContent = item;
 
             const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "🗑";
-            deleteBtn.style.marginLeft = "8px";
+            deleteBtn.textContent = "×";
             deleteBtn.onclick = () => deleteItem(section, index);
 
             const editBtn = document.createElement("button");
-            editBtn.textContent = "✏️";
-            editBtn.style.marginLeft = "6px";
+            editBtn.textContent = "✎";
             editBtn.onclick = () => editItem(section, index);
 
             div.appendChild(checkbox);
@@ -86,36 +64,48 @@ function renderList() {
     }
 }
 
-function editItem(section, index) {
-    const newName = prompt("Edit item name:", sections[section][index]);
-    if (newName && newName.trim()) {
-        sections[section][index] = newName.trim();
-        saveSections();
-        renderList();
+function toggleSelection(section, item, isChecked) {
+    if (!selectedItems[section]) selectedItems[section] = [];
+    if (isChecked) {
+        selectedItems[section].push(item);
+    } else {
+        selectedItems[section] = selectedItems[section].filter(i => i !== item);
     }
+    saveSelected();
 }
 
 function deleteItem(section, index) {
     if (confirm(`Delete "${sections[section][index]}" from ${section}?`)) {
         sections[section].splice(index, 1);
-        if (selectedItems[section])
-            selectedItems[section] = selectedItems[section].filter(i => i !== sections[section][index]);
         saveSections();
-        saveSelectedItems();
+        renderList();
+    }
+}
+
+function editItem(section, index) {
+    const newItem = prompt("Edit item:", sections[section][index]);
+    if (newItem && newItem.trim()) {
+        sections[section][index] = newItem.trim();
+        saveSections();
         renderList();
     }
 }
 
 function addItem(section) {
-    const newItem = prompt(`Enter new item name for ${section}:`);
+    const newItem = prompt("Enter new item name for " + section + ":");
     if (newItem && newItem.trim()) {
-        if (!sections[section].includes(newItem.trim())) {
-            sections[section].push(newItem.trim());
-            saveSections();
-            renderList();
-        } else {
-            alert("Item already exists in this section.");
-        }
+        sections[section].push(newItem.trim());
+        saveSections();
+        renderList();
+    }
+}
+
+function promptAddItem() {
+    const section = prompt("Enter section name to add item to:");
+    if (section && sections[section]) {
+        addItem(section);
+    } else {
+        alert("Section not found.");
     }
 }
 
@@ -130,22 +120,22 @@ function showSelected() {
 }
 
 function unselectAll() {
-    if (confirm("Unselect all items?")) {
-        selectedItems = {};
-        saveSelectedItems();
-        renderList();
-    }
+    selectedItems = {};
+    saveSelected();
+    renderList();
 }
 
 function backupData() {
-    const data = { sections, selectedItems };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const data = {
+        sections,
+        selectedItems
+    };
+    const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "shop_order_backup.json";
+    a.download = "backup.json";
     a.click();
-    URL.revokeObjectURL(url);
 }
 
 function restoreData() {
@@ -154,14 +144,13 @@ function restoreData() {
     input.accept = "application/json";
     input.onchange = e => {
         const file = e.target.files[0];
-        if (!file) return;
         const reader = new FileReader();
-        reader.onload = event => {
-            const data = JSON.parse(event.target.result);
-            if (data.sections) sections = data.sections;
-            if (data.selectedItems) selectedItems = data.selectedItems;
+        reader.onload = () => {
+            const data = JSON.parse(reader.result);
+            sections = data.sections || {};
+            selectedItems = data.selectedItems || {};
             saveSections();
-            saveSelectedItems();
+            saveSelected();
             renderList();
         };
         reader.readAsText(file);
@@ -169,45 +158,27 @@ function restoreData() {
     input.click();
 }
 
-function exportToPDF() {
-    const { jsPDF } = window.jspdf;
+function exportPDF() {
     const doc = new jsPDF();
     let y = 10;
-
-    for (const section in selectedItems) {
+    for (const section of Object.keys(selectedItems)) {
         if (selectedItems[section].length > 0) {
-            doc.setFont("helvetica", "bold");
+            doc.setFont(undefined, 'bold');
             doc.text(section, 10, y);
-            y += 5;
-            doc.setFont("helvetica", "normal");
+            y += 6;
+            doc.setFont(undefined, 'normal');
             selectedItems[section].forEach(item => {
-                if (y > 280) { doc.addPage(); y = 10; }
-                doc.text("- " + item, 14, y);
-                y += 5;
+                doc.text(" - " + item, 10, y);
+                y += 6;
+                if (y > 280) {
+                    doc.addPage();
+                    y = 10;
+                }
             });
-            y += 5;
+            y += 6;
         }
     }
-
-    doc.save("Selected_Items.pdf");
+    doc.save("selected-items.pdf");
 }
 
-// Floating Add Button Logic
-window.addEventListener("scroll", () => {
-    const sectionsHeadings = document.querySelectorAll("h2");
-    let current = currentVisibleSection;
-    sectionsHeadings.forEach((heading) => {
-        const rect = heading.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
-            current = heading.querySelector(".section-name").textContent;
-        }
-    });
-    currentVisibleSection = current;
-});
-
-function addItemToVisibleSection() {
-    addItem(currentVisibleSection);
-}
-
-// Initial Render
 renderList();
