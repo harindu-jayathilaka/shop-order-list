@@ -27,9 +27,14 @@ function saveSelected() {
 function renderList() {
     const listDiv = document.getElementById("list");
     listDiv.innerHTML = "";
-    for (const section of Object.keys(sections).sort()) {
+    for (const section in sections) {
         const h2 = document.createElement("h2");
         h2.textContent = section;
+
+        const addBtn = document.createElement("button");
+        addBtn.textContent = "+ Add Item";
+        addBtn.onclick = () => addItem(section);
+        h2.appendChild(addBtn);
         listDiv.appendChild(h2);
 
         sections[section].sort().forEach((item, index) => {
@@ -40,7 +45,15 @@ function renderList() {
             checkbox.type = "checkbox";
             checkbox.id = section + "_" + index;
             checkbox.checked = selectedItems[section]?.includes(item) || false;
-            checkbox.onchange = () => toggleSelection(section, item, checkbox.checked);
+            checkbox.onchange = () => {
+                if (!selectedItems[section]) selectedItems[section] = [];
+                if (checkbox.checked) {
+                    selectedItems[section].push(item);
+                } else {
+                    selectedItems[section] = selectedItems[section].filter(i => i !== item);
+                }
+                saveSelected();
+            };
 
             const label = document.createElement("label");
             label.htmlFor = checkbox.id;
@@ -48,15 +61,11 @@ function renderList() {
 
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "×";
+            deleteBtn.style.marginLeft = "10px";
             deleteBtn.onclick = () => deleteItem(section, index);
-
-            const editBtn = document.createElement("button");
-            editBtn.textContent = "✎";
-            editBtn.onclick = () => editItem(section, index);
 
             div.appendChild(checkbox);
             div.appendChild(label);
-            div.appendChild(editBtn);
             div.appendChild(deleteBtn);
 
             listDiv.appendChild(div);
@@ -64,29 +73,15 @@ function renderList() {
     }
 }
 
-function toggleSelection(section, item, isChecked) {
-    if (!selectedItems[section]) selectedItems[section] = [];
-    if (isChecked) {
-        selectedItems[section].push(item);
-    } else {
-        selectedItems[section] = selectedItems[section].filter(i => i !== item);
-    }
-    saveSelected();
-}
-
 function deleteItem(section, index) {
     if (confirm(`Delete "${sections[section][index]}" from ${section}?`)) {
+        const item = sections[section][index];
         sections[section].splice(index, 1);
+        if (selectedItems[section]) {
+            selectedItems[section] = selectedItems[section].filter(i => i !== item);
+        }
         saveSections();
-        renderList();
-    }
-}
-
-function editItem(section, index) {
-    const newItem = prompt("Edit item:", sections[section][index]);
-    if (newItem && newItem.trim()) {
-        sections[section][index] = newItem.trim();
-        saveSections();
+        saveSelected();
         renderList();
     }
 }
@@ -94,14 +89,18 @@ function editItem(section, index) {
 function addItem(section) {
     const newItem = prompt("Enter new item name for " + section + ":");
     if (newItem && newItem.trim()) {
-        sections[section].push(newItem.trim());
-        saveSections();
-        renderList();
+        if (!sections[section].includes(newItem.trim())) {
+            sections[section].push(newItem.trim());
+            saveSections();
+            renderList();
+        } else {
+            alert("Item already exists in this section.");
+        }
     }
 }
 
 function promptAddItem() {
-    const section = prompt("Enter section name to add item to:");
+    const section = prompt("Enter section name for new item:");
     if (section && sections[section]) {
         addItem(section);
     } else {
@@ -112,7 +111,7 @@ function promptAddItem() {
 function showSelected() {
     let output = "";
     for (const section in selectedItems) {
-        if (selectedItems[section].length > 0) {
+        if (selectedItems[section]?.length) {
             output += section + ":\n" + selectedItems[section].join("\n") + "\n\n";
         }
     }
@@ -126,11 +125,8 @@ function unselectAll() {
 }
 
 function backupData() {
-    const data = {
-        sections,
-        selectedItems
-    };
-    const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+    const data = JSON.stringify({ sections, selectedItems });
+    const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -141,13 +137,13 @@ function backupData() {
 function restoreData() {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "application/json";
+    input.accept = ".json";
     input.onchange = e => {
         const file = e.target.files[0];
         const reader = new FileReader();
-        reader.onload = () => {
-            const data = JSON.parse(reader.result);
-            sections = data.sections || {};
+        reader.onload = event => {
+            const data = JSON.parse(event.target.result);
+            sections = data.sections || sections;
             selectedItems = data.selectedItems || {};
             saveSections();
             saveSelected();
@@ -161,24 +157,24 @@ function restoreData() {
 function exportPDF() {
     const doc = new jsPDF();
     let y = 10;
-    for (const section of Object.keys(selectedItems)) {
-        if (selectedItems[section].length > 0) {
+    for (const section in selectedItems) {
+        if (selectedItems[section]?.length) {
             doc.setFont(undefined, 'bold');
             doc.text(section, 10, y);
             y += 6;
             doc.setFont(undefined, 'normal');
             selectedItems[section].forEach(item => {
-                doc.text(" - " + item, 10, y);
+                doc.text("- " + item, 10, y);
                 y += 6;
                 if (y > 280) {
                     doc.addPage();
                     y = 10;
                 }
             });
-            y += 6;
+            y += 4;
         }
     }
-    doc.save("selected-items.pdf");
+    doc.save("SelectedItems.pdf");
 }
 
 renderList();
