@@ -4,44 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shop Order List</title>
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Shop Order List">
 <style>
-    body { font-family: Arial, sans-serif; margin: 20px; padding-bottom: 120px; }
-    h1 { text-align: center; }
-    h2 { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
-    .item { display: flex; align-items: center; margin-bottom: 5px; }
+    body { font-family: Arial, sans-serif; margin: 0; padding-bottom: 100px; }
+    h1 { text-align: center; margin-top: 10px; }
+    h2 { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
+    .item { display: flex; align-items: center; margin-bottom: 5px; padding-left: 10px; }
     input[type="checkbox"] { margin-right: 10px; }
     button { padding: 5px 10px; font-size: 14px; cursor: pointer; }
     #output { white-space: pre-line; margin-top: 10px; background: #f4f4f4; padding: 10px; }
+
     .control-bar {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        background: #f9f9f9;
+        background: #fff;
         box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-        padding: 10px;
+        padding: 5px;
         display: flex;
         flex-direction: column;
         align-items: center;
+        font-size: 14px;
         z-index: 999;
     }
     .control-row {
         display: flex;
         justify-content: center;
-        gap: 10px;
-        margin: 5px 0;
+        gap: 8px;
+        margin: 2px 0;
     }
     .control-bar button {
-        padding: 8px 12px;
-        font-size: 14px;
+        padding: 6px 10px;
+        font-size: 13px;
         border: none;
         background: #2196F3;
         color: white;
-        border-radius: 5px;
+        border-radius: 4px;
         transition: background 0.2s;
     }
     .control-bar button:hover {
@@ -62,6 +60,13 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         z-index: 1000;
     }
+    .highlight {
+        animation: highlight 1s ease;
+    }
+    @keyframes highlight {
+        0% { background-color: #ffff99; }
+        100% { background-color: transparent; }
+    }
 </style>
 </head>
 <body>
@@ -81,17 +86,10 @@
     </div>
 </div>
 
-<button class="floating-add-btn" onclick="promptAddItem()">+</button>
+<button class="floating-add-btn" onclick="autoAddItem()">+</button>
 
 <div id="output"></div>
 
 <script src="app.js"></script>
-<script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-        .then(() => console.log('Service Worker registered'))
-        .catch(err => console.log('Service Worker registration failed:', err));
-}
-</script>
 </body>
 </html>
