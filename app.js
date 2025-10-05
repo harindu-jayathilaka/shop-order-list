@@ -28,6 +28,8 @@ function renderList() {
     const listDiv = document.getElementById("list");
     listDiv.innerHTML = "";
     for (const section in sections) {
+        const sectionDiv = document.createElement("div");
+        sectionDiv.id = `section-${section}`;
         const h2 = document.createElement("h2");
         h2.textContent = section;
 
@@ -35,7 +37,7 @@ function renderList() {
         addBtn.textContent = "+ Add Item";
         addBtn.onclick = () => addItem(section);
         h2.appendChild(addBtn);
-        listDiv.appendChild(h2);
+        sectionDiv.appendChild(h2);
 
         sections[section].sort().forEach((item, index) => {
             const div = document.createElement("div");
@@ -68,8 +70,9 @@ function renderList() {
             div.appendChild(label);
             div.appendChild(deleteBtn);
 
-            listDiv.appendChild(div);
+            sectionDiv.appendChild(div);
         });
+        listDiv.appendChild(sectionDiv);
     }
 }
 
@@ -93,18 +96,31 @@ function addItem(section) {
             sections[section].push(newItem.trim());
             saveSections();
             renderList();
+            highlightSection(section);
         } else {
             alert("Item already exists in this section.");
         }
     }
 }
 
-function promptAddItem() {
-    const section = prompt("Enter section name for new item:");
-    if (section && sections[section]) {
-        addItem(section);
+function highlightSection(section) {
+    const el = document.getElementById(`section-${section}`);
+    if (el) {
+        el.classList.add("highlight");
+        setTimeout(() => el.classList.remove("highlight"), 1000);
+    }
+}
+
+function autoAddItem() {
+    const sectionsOnScreen = Object.keys(sections).filter(section => {
+        const el = document.getElementById(`section-${section}`);
+        const rect = el.getBoundingClientRect();
+        return rect.top < window.innerHeight && rect.bottom > 0;
+    });
+    if (sectionsOnScreen.length) {
+        addItem(sectionsOnScreen[0]);
     } else {
-        alert("Section not found.");
+        alert("No section visible. Scroll to the section where you want to add item.");
     }
 }
 
@@ -129,52 +145,3 @@ function backupData() {
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "backup.json";
-    a.click();
-}
-
-function restoreData() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
-    input.onchange = e => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = event => {
-            const data = JSON.parse(event.target.result);
-            sections = data.sections || sections;
-            selectedItems = data.selectedItems || {};
-            saveSections();
-            saveSelected();
-            renderList();
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
-
-function exportPDF() {
-    const doc = new jsPDF();
-    let y = 10;
-    for (const section in selectedItems) {
-        if (selectedItems[section]?.length) {
-            doc.setFont(undefined, 'bold');
-            doc.text(section, 10, y);
-            y += 6;
-            doc.setFont(undefined, 'normal');
-            selectedItems[section].forEach(item => {
-                doc.text("- " + item, 10, y);
-                y += 6;
-                if (y > 280) {
-                    doc.addPage();
-                    y = 10;
-                }
-            });
-            y += 4;
-        }
-    }
-    doc.save("SelectedItems.pdf");
-}
-
-renderList();
