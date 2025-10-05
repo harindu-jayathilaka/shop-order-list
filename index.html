@@ -1,23 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Shop Order List</title>
-    <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop Order List</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Shop Order List">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    h1 {
+        text-align: center;
+        margin-top: 10px;
+    }
+    h2 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 20px;
+        padding: 0 10px;
+    }
+    .item {
+        display: flex;
+        align-items: center;
+        padding: 5px 10px;
+    }
+    .item label {
+        margin-left: 5px;
+        flex-grow: 1;
+    }
+    .item button {
+        margin-left: 5px;
+        padding: 2px 5px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+    #list {
+        padding-bottom: 120px;
+    }
+    #control-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #f2f2f2;
+        padding: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        border-top: 1px solid #ccc;
+    }
+    #control-panel button {
+        padding: 10px 15px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background: #2196F3;
+        color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #control-panel button:hover {
+        background: #1976D2;
+    }
+    #output {
+        white-space: pre-line;
+        margin: 10px;
+        background: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    #add-floating {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 15px;
+        font-size: 18px;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    #add-floating:hover {
+        background: #388E3C;
+    }
+</style>
 </head>
 <body>
-    <div id="list"></div>
 
-    <div id="control-panel">
-        <button onclick="showSelected()">Show Selected Items</button>
-        <button onclick="unselectAll()">Unselect All</button>
-        <button onclick="exportPDF()">Export PDF</button>
-    </div>
+<h1>Shop Order List</h1>
+<div id="list"></div>
 
-    <pre id="output"></pre>
+<div id="control-panel">
+    <button onclick="showSelected()">Show Selected Items</button>
+    <button onclick="unselectAll()">Unselect All</button>
+    <button onclick="exportPDF()">Export to PDF</button>
+    <button onclick="restoreBackup()">Restore Backup</button>
+    <button onclick="exportBackup()">Export Backup</button>
+</div>
 
-    <script src="app.js"></script>
+<button id="add-floating" onclick="floatingAddItem()">+</button>
+
+<div id="output"></div>
+
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(err => console.log('Service Worker registration failed:', err));
+}
+</script>
 </body>
 </html>
