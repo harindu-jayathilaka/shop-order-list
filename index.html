@@ -9,49 +9,78 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shop Order List">
 <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
+    body { 
+        font-family: Arial, sans-serif; 
+        margin: 20px; 
+        padding-bottom: 120px; /* Space for fixed controls */
+    }
     h1 { text-align: center; margin-bottom: 30px; }
     h2 { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
     .item { display: flex; align-items: center; margin-bottom: 5px; }
     input[type="checkbox"] { margin-right: 10px; }
     button { margin: 5px 0; padding: 5px 10px; font-size: 14px; cursor: pointer; }
 
-    /* Floating controls */
-    .floating-controls {
+    /* Wide Bottom Control Panel */
+    .bottom-control-panel {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #ffffffcc;
-        backdrop-filter: blur(5px);
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border-top: 2px solid #e0e0e0;
+        padding: 15px 20px;
         display: flex;
-        flex-direction: column;
-        gap: 6px;
-        padding: 10px;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         z-index: 1000;
+        gap: 10px;
     }
 
-    .floating-controls button {
+    .bottom-control-panel .control-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .bottom-control-panel button {
+        flex: 1;
+        min-width: 80px;
+        padding: 8px 12px;
         font-size: 13px;
-        padding: 6px 10px;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 6px;
     }
 
-    /* Floating Add button */
+    .bottom-control-panel button:hover {
+        background: #e9e9e9;
+    }
+
+    /* Floating Add Button - Bottom Right Corner */
     .floating-add-btn {
         position: fixed;
-        bottom: 110px;
+        bottom: 85px; /* Positioned above the control panel */
         right: 25px;
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         background: #2196F3;
         color: white;
-        font-size: 26px;
+        font-size: 30px;
         border: none;
         cursor: pointer;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        box-shadow: 0 3px 12px rgba(0,0,0,0.3);
         z-index: 1001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .floating-add-btn:hover {
+        background: #1976D2;
+        transform: scale(1.05);
     }
 
     #output {
@@ -60,10 +89,56 @@
         background: #f4f4f4;
         padding: 10px;
         border-radius: 8px;
+        margin-bottom: 20px;
     }
 
     h2 span.section-name {
         font-weight: bold;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .bottom-control-panel {
+            padding: 12px 15px;
+        }
+        
+        .bottom-control-panel .control-buttons {
+            gap: 6px;
+        }
+        
+        .bottom-control-panel button {
+            min-width: 70px;
+            font-size: 12px;
+            padding: 7px 10px;
+        }
+        
+        .floating-add-btn {
+            bottom: 80px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            font-size: 28px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        body {
+            margin: 15px;
+            padding-bottom: 110px;
+        }
+        
+        .bottom-control-panel {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .bottom-control-panel .control-buttons {
+            width: 100%;
+        }
+        
+        .floating-add-btn {
+            bottom: 95px;
+        }
     }
 </style>
 </head>
@@ -73,15 +148,17 @@
 <div id="list"></div>
 
 <!-- Floating Add Item Button -->
-<button class="floating-add-btn" onclick="addItemToVisibleSection()">+</button>
+<button class="floating-add-btn" onclick="addItemToVisibleSection()" title="Add item to current section">+</button>
 
-<!-- Floating Control Panel -->
-<div class="floating-controls">
-    <button onclick="showSelected()">Show Selected</button>
-    <button onclick="unselectAll()">Unselect All</button>
-    <button onclick="backupData()">Backup</button>
-    <button onclick="restoreData()">Restore</button>
-    <button onclick="exportToPDF()">Export PDF</button>
+<!-- Wide Bottom Control Panel -->
+<div class="bottom-control-panel">
+    <div class="control-buttons">
+        <button onclick="showSelected()">Show Selected</button>
+        <button onclick="unselectAll()">Unselect All</button>
+        <button onclick="backupData()">Backup</button>
+        <button onclick="restoreData()">Restore</button>
+        <button onclick="exportToPDF()">Export PDF</button>
+    </div>
 </div>
 
 <div id="output"></div>
