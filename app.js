@@ -30,13 +30,21 @@ function renderList() {
     for (const section in sections) {
         const sectionDiv = document.createElement("div");
         sectionDiv.id = `section-${section}`;
+        sectionDiv.style.padding = "10px";
+        sectionDiv.style.borderBottom = "1px solid #ddd";
+
         const h2 = document.createElement("h2");
         h2.textContent = section;
+        h2.style.display = "flex";
+        h2.style.justifyContent = "space-between";
+        h2.style.alignItems = "center";
+        h2.style.fontSize = "18px";
 
         const addBtn = document.createElement("button");
         addBtn.textContent = "+ Add Item";
         addBtn.onclick = () => addItem(section);
         h2.appendChild(addBtn);
+
         sectionDiv.appendChild(h2);
 
         sections[section].sort().forEach((item, index) => {
@@ -145,3 +153,36 @@ function backupData() {
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+    a.href = url;
+    a.download = "shoplist_backup.json";
+    a.click();
+}
+
+function restoreData() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const data = JSON.parse(e.target.result);
+            sections = data.sections || sections;
+            selectedItems = data.selectedItems || selectedItems;
+            saveSections();
+            saveSelected();
+            renderList();
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function exportPDF() {
+    alert("Export to PDF functionality is not yet implemented.");
+}
+
+window.onload = () => {
+    renderList();
+};
