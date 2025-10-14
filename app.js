@@ -29,7 +29,7 @@ function renderList() {
     listDiv.innerHTML = "";
 
     for (const section in sections) {
-        sections[section].sort((a, b) => a.localeCompare(b)); // Sort alphabetically
+        sections[section].sort((a, b) => a.localeCompare(b));
 
         const h2 = document.createElement("h2");
         const sectionName = document.createElement("span");
@@ -54,10 +54,14 @@ function renderList() {
             checkbox.onchange = () => {
                 if (!selectedItems[section]) selectedItems[section] = [];
                 if (checkbox.checked) {
-                    if (!selectedItems[section].includes(item))
+                    if (!selectedItems[section].includes(item)) {
                         selectedItems[section].push(item);
+                    }
                 } else {
                     selectedItems[section] = selectedItems[section].filter(i => i !== item);
+                    if (selectedItems[section].length === 0) {
+                        delete selectedItems[section];
+                    }
                 }
                 saveSelectedItems();
             };
@@ -87,19 +91,45 @@ function renderList() {
 }
 
 function editItem(section, index) {
-    const newName = prompt("Edit item name:", sections[section][index]);
+    const oldName = sections[section][index];
+    const newName = prompt("Edit item name:", oldName);
     if (newName && newName.trim()) {
-        sections[section][index] = newName.trim();
+        const trimmedName = newName.trim();
+
+        if (sections[section].includes(trimmedName)) {
+            alert("Item already exists in this section.");
+            return;
+        }
+
+        sections[section][index] = trimmedName;
+
+        // Update selectedItems if the old item was selected
+        if (selectedItems[section]) {
+            const i = selectedItems[section].indexOf(oldName);
+            if (i !== -1) {
+                selectedItems[section][i] = trimmedName;
+            }
+        }
+
         saveSections();
+        saveSelectedItems();
         renderList();
     }
 }
 
 function deleteItem(section, index) {
-    if (confirm(`Delete "${sections[section][index]}" from ${section}?`)) {
+    const itemToDelete = sections[section][index];
+    if (confirm(`Delete "${itemToDelete}" from ${section}?`)) {
         sections[section].splice(index, 1);
-        if (selectedItems[section])
-            selectedItems[section] = selectedItems[section].filter(i => i !== sections[section][index]);
+
+        // Remove from selectedItems if it exists
+        if (selectedItems[section]) {
+            selectedItems[section] = selectedItems[section].filter(item => item !== itemToDelete);
+            if (selectedItems[section].length === 0) {
+                delete selectedItems[section];
+            }
+        }
+
         saveSections();
         saveSelectedItems();
         renderList();
@@ -109,8 +139,9 @@ function deleteItem(section, index) {
 function addItem(section) {
     const newItem = prompt(`Enter new item name for ${section}:`);
     if (newItem && newItem.trim()) {
-        if (!sections[section].includes(newItem.trim())) {
-            sections[section].push(newItem.trim());
+        const trimmed = newItem.trim();
+        if (!sections[section].includes(trimmed)) {
+            sections[section].push(trimmed);
             saveSections();
             renderList();
         } else {
@@ -129,11 +160,10 @@ function showSelected() {
     document.getElementById("output").textContent = output || "No items selected.";
 }
 
-// Add this new function
 function scrollToOutput() {
     const output = document.getElementById('output');
-    showSelected(); // Ensure output is updated
-    output.scrollIntoView({ 
+    showSelected();
+    output.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
     });
@@ -167,12 +197,16 @@ function restoreData() {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = event => {
-            const data = JSON.parse(event.target.result);
-            if (data.sections) sections = data.sections;
-            if (data.selectedItems) selectedItems = data.selectedItems;
-            saveSections();
-            saveSelectedItems();
-            renderList();
+            try {
+                const data = JSON.parse(event.target.result);
+                if (data.sections) sections = data.sections;
+                if (data.selectedItems) selectedItems = data.selectedItems;
+                saveSections();
+                saveSelectedItems();
+                renderList();
+            } catch (e) {
+                alert("Invalid backup file.");
+            }
         };
         reader.readAsText(file);
     };
@@ -202,7 +236,7 @@ function exportToPDF() {
     doc.save("Selected_Items.pdf");
 }
 
-// Floating Add Button Logic
+// Track which section is visible for the floating add button
 window.addEventListener("scroll", () => {
     const sectionsHeadings = document.querySelectorAll("h2");
     let current = currentVisibleSection;
@@ -219,6 +253,5 @@ function addItemToVisibleSection() {
     addItem(currentVisibleSection);
 }
 
-// Initial Render
+// Initial render
 renderList();
-
